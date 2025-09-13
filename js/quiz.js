@@ -1,31 +1,52 @@
-const backendURL = "https://spin-contest-backend.vercel.app/api";
+// Detect which round we are in (from HTML file name)
+const round = window.location.pathname.includes("round1") ? "round1" : "round2";
 
-async function loadQuiz(round) {
-  const res = await fetch(`${backendURL}/quiz/${round}`);
-  const questions = await res.json();
+const API_BASE = "https://spin-contest-backend-pale1mbhp-priyaas-projects-a6f9b310.vercel.app/api";
 
-  const quizContainer = document.getElementById("quizContainer");
-  quizContainer.innerHTML = "";
+async function loadQuiz() {
+  try {
+    const res = await fetch(`${API_BASE}/quiz/${round}`);
+    const data = await res.json();
 
-  questions.forEach((q, index) => {
-    const div = document.createElement("div");
-    div.classList.add("mb-4", "p-3", "border", "rounded", "bg-white");
-    div.innerHTML = `
-      <p class="font-bold">${index + 1}. ${q.question}</p>
-      ${q.options.map(opt => `
-        <label class="block">
-          <input type="radio" name="q${index}" value="${opt}"> ${opt}
-        </label>
-      `).join("")}
-    `;
-    quizContainer.appendChild(div);
-  });
+    const quizContainer = document.getElementById("quiz");
+    quizContainer.innerHTML = "";
 
-  document.getElementById("submitQuiz").onclick = () => {
-    window.location.href = "thankyou.html";
-  };
+    data.questions.forEach((q, i) => {
+      const div = document.createElement("div");
+      div.innerHTML = `
+        <p>${i + 1}. ${q.question}</p>
+        ${q.options.map(opt => `<label><input type="radio" name="q${i}" value="${opt}"> ${opt}</label><br>`).join("")}
+      `;
+      quizContainer.appendChild(div);
+    });
+
+    const btn = document.createElement("button");
+    btn.innerText = "Submit";
+    btn.onclick = submitQuiz;
+    quizContainer.appendChild(btn);
+  } catch (err) {
+    console.error("❌ Failed to load quiz:", err);
+  }
 }
 
-// Detect round from filename
-if (window.location.pathname.includes("round1.html")) loadQuiz(1);
-if (window.location.pathname.includes("round2.html")) loadQuiz(2);
+async function submitQuiz() {
+  const answers = {};
+  document.querySelectorAll("input[type=radio]:checked").forEach(input => {
+    answers[input.name] = input.value;
+  });
+
+  try {
+    const res = await fetch(`${API_BASE}/quiz/${round}/submit`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ answers })
+    });
+    const data = await res.json();
+    alert(`✅ Score: ${data.score}`);
+    window.location.href = "leaderboard.html";
+  } catch (err) {
+    console.error("❌ Error submitting quiz:", err);
+  }
+}
+
+loadQuiz();

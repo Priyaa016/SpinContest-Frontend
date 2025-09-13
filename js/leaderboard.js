@@ -1,20 +1,27 @@
-const backendURL = "https://spin-contest-backend.vercel.app/api";
+const API_BASE = "https://spin-contest-backend-pale1mbhp-priyaas-projects-a6f9b310.vercel.app/api";
 
 async function loadLeaderboard() {
-  const res = await fetch(`${backendURL}/leaderboard`);
-  const data = await res.json();
+  try {
+    const res = await fetch(`${API_BASE}/leaderboard`);
+    const data = await res.json();
 
-  const table = document.getElementById("leaderboardTable");
-  table.innerHTML = "";
+    const leaderboard = document.getElementById("leaderboard");
+    leaderboard.innerHTML = `
+      <tr><th>Rank</th><th>Name</th><th>Score</th></tr>
+    `;
 
-  data.forEach((p, i) => {
-    const row = `<tr>
-      <td class="border px-4 py-2">${i + 1}</td>
-      <td class="border px-4 py-2">${p.name}</td>
-      <td class="border px-4 py-2">${p.score}</td>
-    </tr>`;
-    table.innerHTML += row;
-  });
+    data.forEach((p, i) => {
+      leaderboard.innerHTML += `
+        <tr>
+          <td>${i + 1}</td>
+          <td>${p.name}</td>
+          <td>${p.score}</td>
+        </tr>
+      `;
+    });
+  } catch (err) {
+    console.error("❌ Failed to load leaderboard:", err);
+  }
 }
 
 loadLeaderboard();
