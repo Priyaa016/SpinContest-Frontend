@@ -16,24 +16,33 @@
   </div>
 
   <script>
-    const backendURL = "https://spin-contest-backend-kmvqw6oqz-priyaas-projects-a6f9b310.vercel.app/";
+    const API_URL = "https://spin-contest-backend-bw3aywx4h-priyaas-projects-a6f9b310.vercel.app";
 
     document.getElementById("registerForm").addEventListener("submit", async (e) => {
       e.preventDefault();
+
       const name = document.getElementById("name").value;
       const email = document.getElementById("email").value;
 
-      const res = await fetch(`${backendURL}/participants`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email })
-      });
+      try {
+        const res = await fetch(`${API_URL}/api/participants/register`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email })
+        });
 
-      if (res.ok) {
-        localStorage.setItem("email", email);
-        window.location.href = "spin.html";
-      } else {
-        alert("Registration failed. Try another email.");
+        if (res.ok) {
+          const data = await res.json();
+          localStorage.setItem("participantId", data._id);
+          localStorage.setItem("name", data.name);
+          window.location.href = "spin.html";
+        } else {
+          const error = await res.json();
+          alert("Registration failed: " + (error.error || "Unknown error"));
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Failed to connect to backend");
       }
     });
   </script>

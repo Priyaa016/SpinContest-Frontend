@@ -1,4 +1,4 @@
-const API_URL = "https://spin-contest-backend-kmvqw6oqz-priyaas-projects-a6f9b310.vercel.app/";
+const API_URL = "https://spin-contest-backend-bw3aywx4h-priyaas-projects-a6f9b310.vercel.app";
 
 // load quiz questions
 async function loadQuiz() {
