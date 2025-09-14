@@ -1,50 +1,30 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>SpinContest - Register</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss/dist/tailwind.min.css">
-</head>
-<body class="bg-gray-100 flex items-center justify-center h-screen">
-  <div class="bg-white p-6 rounded-lg shadow-md w-96">
-    <h2 class="text-2xl font-bold mb-4 text-center">Register</h2>
-    <form id="registerForm">
-      <input type="text" id="name" placeholder="Name" class="w-full border p-2 mb-3 rounded" required>
-      <input type="email" id="email" placeholder="Email" class="w-full border p-2 mb-3 rounded" required>
-      <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded">Register</button>
-    </form>
-  </div>
+<script>
+  const API_URL = "/api";
 
-  <script>
-    const API_URL = "https://spin-contest-backend-bw3aywx4h-priyaas-projects-a6f9b310.vercel.app";
+  document.getElementById("registerForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const name = document.getElementById("name").value;
+    const email = document.getElementById("email").value;
 
-    document.getElementById("registerForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
+    try {
+      const res = await fetch(`${API_URL}/participants/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email })
+      });
 
-      const name = document.getElementById("name").value;
-      const email = document.getElementById("email").value;
-
-      try {
-        const res = await fetch(`${API_URL}/api/participants/register`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, email })
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          localStorage.setItem("participantId", data._id);
-          localStorage.setItem("name", data.name);
-          window.location.href = "spin.html";
-        } else {
-          const error = await res.json();
-          alert("Registration failed: " + (error.error || "Unknown error"));
-        }
-      } catch (err) {
-        console.error(err);
-        alert("Failed to connect to backend");
+      if (res.ok) {
+        const data = await res.json();
+        localStorage.setItem("participantId", data._id);
+        localStorage.setItem("name", data.name);
+        window.location.href = "spin.html";
+      } else {
+        const error = await res.json();
+        alert("Registration failed: " + (error.error || "Unknown error"));
       }
-    });
-  </script>
-</body>
-</html>
+    } catch (err) {
+      console.error(err);
+      alert("Failed to connect to backend");
+    }
+  });
+</script>

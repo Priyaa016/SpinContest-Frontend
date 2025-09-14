@@ -1,33 +1,45 @@
-const API_URL = "https://spin-contest-backend-bw3aywx4h-priyaas-projects-a6f9b310.vercel.app";
+// js/quiz.js
+const API_URL = "/api";
+const quizContainer = document.getElementById("quizContainer");
 
-// load quiz questions
 async function loadQuiz() {
-  const res = await fetch(`${API_URL}/api/quiz`);
-  const questions = await res.json();
+  try {
+    const res = await fetch(`${API_URL}/quiz`); // this will call GET /api/quiz
+    const questions = await res.json();
+    quizContainer.innerHTML = "";
 
-  const quizContainer = document.getElementById("quiz");
-  quizContainer.innerHTML = "";
-
-  questions.forEach((q, i) => {
-    const div = document.createElement("div");
-    div.innerHTML = `
-      <p>${i + 1}. ${q.question}</p>
-      ${q.options.map(opt => `<button onclick="submitAnswer('${q._id}', '${opt}')">${opt}</button>`).join("")}
-    `;
-    quizContainer.appendChild(div);
-  });
+    questions.forEach((q, i) => {
+      const div = document.createElement("div");
+      div.className = "mb-4 p-3 bg-white rounded shadow";
+      div.innerHTML = `
+        <p class="font-semibold">${i + 1}. ${q.question}</p>
+        <div id="opts-${q._id}">${q.options.map(opt => `<button class="m-1 px-3 py-1 rounded border" onclick="submitAnswer('${q._id}', '${opt.replace(/'/g, "\\'")}')">${opt}</button>`).join("")}</div>
+      `;
+      quizContainer.appendChild(div);
+    });
+  } catch (err) {
+    console.error(err);
+    quizContainer.innerHTML = "<p>Failed to load quiz</p>";
+  }
 }
 
-// submit answer
 async function submitAnswer(questionId, answer) {
-  const res = await fetch(`${API_URL}/api/quiz/submit`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ questionId, answer, participantId: "12345" }) // replace with actual logged-in participant
-  });
+  try {
+    const participantId = localStorage.getItem("participantId");
+    if (!participantId) return alert("You must register first");
 
-  const result = await res.json();
-  alert(result.message);
+    const res = await fetch(`${API_URL}/quiz/submit`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ questionId, answer, participantId })
+    });
+
+    const result = await res.json();
+    alert(result.message || (result.correct ? "Correct" : "Incorrect"));
+  } catch (err) {
+    console.error(err);
+    alert("Failed to submit answer");
+  }
 }
 
 loadQuiz();
