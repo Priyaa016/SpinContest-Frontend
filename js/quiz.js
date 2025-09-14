@@ -1,52 +1,33 @@
-// Detect which round we are in (from HTML file name)
-const round = window.location.pathname.includes("round1") ? "round1" : "round2";
+const API_URL = "https://spin-contest-backend-kmvqw6oqz-priyaas-projects-a6f9b310.vercel.app/";
 
-const API_BASE = "https://spin-contest-backend-pale1mbhp-priyaas-projects-a6f9b310.vercel.app/api";
-
+// load quiz questions
 async function loadQuiz() {
-  try {
-    const res = await fetch(`${API_BASE}/quiz/${round}`);
-    const data = await res.json();
+  const res = await fetch(`${API_URL}/api/quiz`);
+  const questions = await res.json();
 
-    const quizContainer = document.getElementById("quiz");
-    quizContainer.innerHTML = "";
+  const quizContainer = document.getElementById("quiz");
+  quizContainer.innerHTML = "";
 
-    data.questions.forEach((q, i) => {
-      const div = document.createElement("div");
-      div.innerHTML = `
-        <p>${i + 1}. ${q.question}</p>
-        ${q.options.map(opt => `<label><input type="radio" name="q${i}" value="${opt}"> ${opt}</label><br>`).join("")}
-      `;
-      quizContainer.appendChild(div);
-    });
-
-    const btn = document.createElement("button");
-    btn.innerText = "Submit";
-    btn.onclick = submitQuiz;
-    quizContainer.appendChild(btn);
-  } catch (err) {
-    console.error("❌ Failed to load quiz:", err);
-  }
+  questions.forEach((q, i) => {
+    const div = document.createElement("div");
+    div.innerHTML = `
+      <p>${i + 1}. ${q.question}</p>
+      ${q.options.map(opt => `<button onclick="submitAnswer('${q._id}', '${opt}')">${opt}</button>`).join("")}
+    `;
+    quizContainer.appendChild(div);
+  });
 }
 
-async function submitQuiz() {
-  const answers = {};
-  document.querySelectorAll("input[type=radio]:checked").forEach(input => {
-    answers[input.name] = input.value;
+// submit answer
+async function submitAnswer(questionId, answer) {
+  const res = await fetch(`${API_URL}/api/quiz/submit`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ questionId, answer, participantId: "12345" }) // replace with actual logged-in participant
   });
 
-  try {
-    const res = await fetch(`${API_BASE}/quiz/${round}/submit`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ answers })
-    });
-    const data = await res.json();
-    alert(`✅ Score: ${data.score}`);
-    window.location.href = "leaderboard.html";
-  } catch (err) {
-    console.error("❌ Error submitting quiz:", err);
-  }
+  const result = await res.json();
+  alert(result.message);
 }
 
 loadQuiz();

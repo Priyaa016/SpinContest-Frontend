@@ -5,8 +5,8 @@ const spinBtn = document.getElementById("spinBtn");
 const segments = ["Round 1", "Round 2", "Try Again"];
 const colors = ["#FF5733", "#33FF57", "#3357FF"];
 
-// 🔗 Backend API base URL
-const API_BASE = "https://spin-contest-backend-pale1mbhp-priyaas-projects-a6f9b310.vercel.app/api";
+// backend base URL
+const API_URL = "https://spin-contest-backend-kmvqw6oqz-priyaas-projects-a6f9b310.vercel.app/";
 
 function drawWheel() {
   const arc = (2 * Math.PI) / segments.length;
@@ -26,21 +26,16 @@ function drawWheel() {
 }
 drawWheel();
 
-spinBtn.addEventListener("click", async () => {
+spinBtn.addEventListener("click", () => {
   const choice = segments[Math.floor(Math.random() * segments.length)];
 
-  // 👉 save spin result in backend
-  try {
-    await fetch(`${API_BASE}/participants/spin`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ result: choice }) // you can add participantId later
-    });
-  } catch (err) {
-    console.error("❌ Error saving spin result:", err);
-  }
+  // save spin result to backend
+  fetch(`${API_URL}/api/participants/spin-result`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ result: choice })
+  });
 
-  // redirect after short delay
   setTimeout(() => {
     if (choice === "Round 1") window.location.href = "round1.html";
     else if (choice === "Round 2") window.location.href = "round2.html";
